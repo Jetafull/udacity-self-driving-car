@@ -3,7 +3,16 @@
 
 # build files
 build/
+
+# CMake 
 cmake-build-debug/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+
+# xcode
+ExtendedKF.xcodeproj
 
 # external files
 uWebSockets/
