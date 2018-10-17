@@ -12,7 +12,8 @@ CMakeScripts/
 cmake_install.cmake
 
 # xcode
-ExtendedKF.xcodeproj
+*.xcodeproj
+*.build
 
 # external files
 uWebSockets/
