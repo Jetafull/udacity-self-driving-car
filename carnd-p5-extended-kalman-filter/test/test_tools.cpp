@@ -1,39 +1,62 @@
-//
-//  TestCase.cpp
-//  ExtendedKF
-//
-
-// Let Catch provide main():
 #define CATCH_CONFIG_MAIN
 
 #include "../lib/catch.hpp"
 #include "../src/tools.h"
 
-
-TEST_CASE( "CalculateJacobian") {
-    
-    //predicted state  example
-    //px = 1, py = 2, vx = 0.2, vy = 0.4
-    VectorXd x_predicted(4);
-    x_predicted << 1, 2, 0.2, 0.4;
-    
+TEST_CASE("CalculateRMSE calculate RMSE between estimations and ground_truth") {
     Tools tools;
-    MatrixXd Hj = tools.CalculateJacobian(x_predicted);
     
-    cout << "Hj:" << endl << Hj << endl;
+    vector<VectorXd> estimations;
+    vector<VectorXd> ground_truth;
+    
+    SECTION("The estimations has size 0") {
+        VectorXd g(4);
+        g << 1.3, 1.3, 1.3, 1.3;
+        ground_truth.push_back(g);
+        
+        VectorXd rmse = tools.CalculateRMSE(estimations, ground_truth);
+        VectorXd expected_rmse(4);
+        expected_rmse << 0, 0, 0, 0;
+        REQUIRE(rmse == expected_rmse);
+    }
+    
+    SECTION("The estimations and group_truth differ in size") {
+        VectorXd e(4);
+        e << 1, 1, 1, 1;
+        estimations.push_back(e);
+        e << 1, 1, 1, 1;
+        estimations.push_back(e);
+        
+        VectorXd g(4);
+        g << 1.3, 1.3, 1.3, 1.3;
+        ground_truth.push_back(g);
+        
+        VectorXd rmse = tools.CalculateRMSE(estimations, ground_truth);
+        VectorXd expected_rmse(4);
+        expected_rmse << 0, 0, 0, 0;
+        REQUIRE(rmse == expected_rmse);
+    }
+    
+    SECTION("Good estimations and ground_truth") {
+        //the input list of estimations
+        VectorXd e(4);
+        e << 1, 1, 1, 1;
+        estimations.push_back(e);
+        e << 1, 1, 1, 1;
+        estimations.push_back(e);
+        
+        //the corresponding list of ground truth values
+        VectorXd g(4);
+        g << 1.3, 1.3, 1.3, 1.3;
+        ground_truth.push_back(g);
+        g << 0.7, 1.3, 1.3, 1.3;
+        ground_truth.push_back(g);
+        
+        VectorXd rmse = tools.CalculateRMSE(estimations, ground_truth);
+        REQUIRE(rmse.size() == 4);
+        CHECK(fabs(rmse(0)-0.3) < 0.0001);
+        CHECK(fabs(rmse.sum()-1.2) < 0.0001);
+    }
+    
+
 }
-
-
-// Compile & run:
-// - g++ -std=c++11 -Wall -I$(CATCH_SINGLE_INCLUDE) -o 010-TestCase 010-TestCase.cpp && 010-TestCase --success
-// - cl -EHsc -I%CATCH_SINGLE_INCLUDE% 010-TestCase.cpp && 010-TestCase --success
-
-// Expected compact output (all assertions):
-//
-// prompt> 010-TestCase --reporter compact --success
-// 010-TestCase.cpp:14: failed: Factorial(0) == 1 for: 0 == 1
-// 010-TestCase.cpp:18: passed: Factorial(1) == 1 for: 1 == 1
-// 010-TestCase.cpp:19: passed: Factorial(2) == 2 for: 2 == 2
-// 010-TestCase.cpp:20: passed: Factorial(3) == 6 for: 6 == 6
-// 010-TestCase.cpp:21: passed: Factorial(10) == 3628800 for: 3628800 (0x375f00) == 3628800 (0x375f00)
-// Failed 1 test case, failed 1 assertion.
