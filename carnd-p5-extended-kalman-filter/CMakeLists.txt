@@ -8,8 +8,7 @@ set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
 set(sources src/main.cpp src/tools.cpp src/FusionEKF.cpp src/kalman_filter.cpp src/tools.h src/FusionEKF.h src/kalman_filter.h src/measurement_package)
-set(test_sources test/test_main.cpp test/test_tools.cpp src/tools.cpp src/tools.h)
-
+set(test_sources test/test_tools.cpp src/tools.cpp src/tools.h)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
 
