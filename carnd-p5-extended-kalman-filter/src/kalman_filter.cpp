@@ -46,8 +46,8 @@ void KalmanFilter::Update(const VectorXd &z) {
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
     // create Jacobian of H
     Tools tools;
-    MatrixXd Hj = tools.CalculateJacobian(x_); 
-    
+    MatrixXd Hj = tools.CalculateJacobian(x_);
+
     // recover state parameters
     float px = x_(0);
     float py = x_(1);
@@ -69,7 +69,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     while (y(1) >+ M_PI) {
         y(1) -= 2*M_PI;
     }
-    
+
     // update S, K and P with Hj
     MatrixXd Hjt = Hj.transpose();
     MatrixXd S = Hj*P_*Hjt + R_;
