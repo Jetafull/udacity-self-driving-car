@@ -1,8 +1,13 @@
 # silly macOS
 .DS_Store
 
+# compiling output
+*.out
+Debug/
+
 # build files
 build/
+*.xctestrun
 
 # CMake 
 cmake-build-debug/
