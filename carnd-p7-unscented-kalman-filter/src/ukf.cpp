@@ -69,6 +69,18 @@ UKF::UKF() {
 
   // time
   time_us_ = 0;
+
+  // create augmented mean vector
+  x_aug_ = VectorXd(n_aug_);
+
+  // create augmented state covariance
+  P_aug_ = MatrixXd(n_aug_, n_aug_);
+
+  // create sigma point matrix
+  Xsig_aug_ = MatrixXd(n_aug_, 2 * n_aug_ + 1);
+
+  // matrix with predicted points as columns
+  Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 }
 
 UKF::~UKF() {}
@@ -98,7 +110,41 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
-  // estimate the location
+
+  // predict sigma points
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    float px = Xsig_aug_(0, i);
+    float py = Xsig_aug_(1, i);
+    float v = Xsig_aug_(2, i);
+    float psi = Xsig_aug_(3, i);
+    float psi_dot = Xsig_aug_(4, i);
+    float nu_ak = Xsig_aug_(5, i);
+    float nu_yawdd = Xsig_aug_(6, i);
+
+    float px_p, py_p;
+    if (fabs(psi < 0.0001)) {
+      px_p = px + v * cos(psi) * delta_t;
+      py_p = py + v * sin(psi) * delta_t;
+    } else {
+      px_p = px + v * (sin(psi + psi_dot * delta_t) - sin(psi)) / psi_dot;
+      py_p = py + v * (-cos(psi + psi_dot * delta_t) + cos(psi)) / psi_dot;
+    }
+
+    // add noise
+    px_p = px_p + 0.5 * delta_t * delta_t * cos(psi) * nu_ak;
+    py_p = py_p + 0.5 * delta_t * delta_t * sin(psi) * nu_ak;
+
+    float v_p = v + delta_t * nu_ak;
+    float psi_p = psi + psi_dot * delta_t + 0.5 * delta_t * delta_t * nu_yawdd;
+    float psi_dot_p = psi_dot + delta_t * nu_yawdd;
+
+    // update state
+    Xsig_pred_(0, i) = px_p;
+    Xsig_pred_(1, i) = py_p;
+    Xsig_pred_(2, i) = v_p;
+    Xsig_pred_(3, i) = psi_p;
+    Xsig_pred_(4, i) = psi_dot_p;
+  }
 }
 
 /**
@@ -129,4 +175,25 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+}
+
+void UKF::AugmentedSigmaPoints() {
+  // create augmented mean state
+  x_aug_.head(n_x_) = x_;
+
+  // create augmented covariance matrix
+  P_aug_.topLeftCorner(n_x_, n_x_) = P_;
+  P_aug_(n_x_, n_x_) = std_a_ * std_a_;
+  P_aug_(n_x_ + 1, n_x_ + 1) = std_yawdd_ * std_yawdd_;
+
+  // create square root matrix
+  MatrixXd A_aug = P_aug_.llt().matrixL();
+
+  // create augmented sigma points
+  Xsig_aug_.col(0) = x_aug_;
+  for (int i = 0; i < n_aug_; i++) {
+    Xsig_aug_.col(i + 1) = x_aug_ + sqrt(lambda_ + n_aug_) * A_aug.col(i);
+    Xsig_aug_.col(i + 1 + n_aug_) =
+        x_aug_ - sqrt(lambda_ + n_aug_) * A_aug.col(i);
+  }
 }

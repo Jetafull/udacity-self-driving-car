@@ -63,6 +63,11 @@ class UKF {
   ///* Sigma point spreading parameter
   const double lambda_ = 3 - n_aug_;
 
+  VectorXd x_aug_;
+  MatrixXd P_aug_;
+  MatrixXd Xsig_aug_;
+  MatrixXd Xsig_pred_;
+
   /**
    * Constructor
    */
@@ -97,6 +102,8 @@ class UKF {
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+  void AugmentedSigmaPoints();
 };
 
 #endif /* UKF_H */
