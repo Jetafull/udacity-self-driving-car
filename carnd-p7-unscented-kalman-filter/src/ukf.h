@@ -27,15 +27,6 @@ class UKF {
   ///* state covariance matrix
   MatrixXd P_;
 
-  // augmented state vector
-  VectorXd x_aug_;
-
-  // augmented covariance matrix
-  MatrixXd P_aug_;
-
-  ///* predicted sigma points matrix
-  MatrixXd Xsig_pred_;
-
   ///* time when the state is true, in us
   long long time_us_;
 

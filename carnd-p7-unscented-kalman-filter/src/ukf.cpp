@@ -69,9 +69,6 @@ UKF::UKF() {
 
   // time
   time_us_ = 0;
-
-  // create sigma point matrix
-  MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
 }
 
 UKF::~UKF() {}
