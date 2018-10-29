@@ -60,6 +60,9 @@ class UKF {
   ///* Augmented state dimension
   const int n_aug_ = 7;
 
+  ///* Measurement dimension for radar
+  const int n_radar_ = 3;
+
   ///* Sigma point spreading parameter
   const double lambda_ = 3 - n_aug_;
 
@@ -67,6 +70,9 @@ class UKF {
   MatrixXd P_aug_;
   MatrixXd Xsig_aug_;
   MatrixXd Xsig_pred_;
+  MatrixXd S_radar_;
+  MatrixXd z_pred_;
+  MatrixXd Zsig;
 
   /**
    * Constructor
@@ -104,6 +110,7 @@ class UKF {
   void UpdateRadar(MeasurementPackage meas_package);
 
   void AugmentedSigmaPoints();
+  void UKF::PredictRadarMeasurement();
 };
 
 #endif /* UKF_H */
