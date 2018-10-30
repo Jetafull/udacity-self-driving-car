@@ -63,6 +63,9 @@ class UKF {
   ///* Measurement dimension for radar
   const int n_radar_ = 3;
 
+  /// * Measurement dimension for lidar
+  const int n_lidar_ = 2;
+
   ///* Sigma point spreading parameter
   const double lambda_ = 3 - n_aug_;
 
@@ -70,9 +73,16 @@ class UKF {
   MatrixXd P_aug_;
   MatrixXd Xsig_aug_;
   MatrixXd Xsig_pred_;
+
+  // radar measurements
+  MatrixXd Zsig_radar_;
   MatrixXd S_radar_;
-  MatrixXd z_pred_;
-  MatrixXd Zsig;
+  MatrixXd z_pred_radar_;
+
+  // lidar measurements
+  MatrixXd Zsig_lidar_;
+  MatrixXd S_lidar_;
+  MatrixXd z_pred_lidar_;
 
   /**
    * Constructor
@@ -95,22 +105,23 @@ class UKF {
    * matrix
    * @param delta_t Time between k and k+1 in s
    */
-  void Prediction(double delta_t);
+  void Predict(double delta_t);
 
   /**
    * Updates the state and the state covariance matrix using a laser measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateLidar(MeasurementPackage meas_package);
+  void UpdateStateWithLidarMeasurement(MeasurementPackage meas_package);
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateRadar(MeasurementPackage meas_package);
+  void UpdateStateWithRadarMeasurement(MeasurementPackage meas_package);
 
-  void AugmentedSigmaPoints();
-  void UKF::PredictRadarMeasurement();
+  void AugmentSigmaPoints();
+  void MapPredictionToLidarMeasurement();
+  void MapPredictionToRadarMeasurement();
 };
 
 #endif /* UKF_H */
