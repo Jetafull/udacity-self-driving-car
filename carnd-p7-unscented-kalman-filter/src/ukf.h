@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "Eigen/Dense"
+#include "measurement.h"
 #include "measurement_package.h"
 
 using Eigen::MatrixXd;
@@ -60,12 +61,6 @@ class UKF {
   ///* Augmented state dimension
   const int n_aug_ = 7;
 
-  ///* Measurement dimension for radar
-  const int n_radar_ = 3;
-
-  /// * Measurement dimension for lidar
-  const int n_lidar_ = 2;
-
   ///* Sigma point spreading parameter
   const double lambda_ = 3 - n_aug_;
 
@@ -75,14 +70,12 @@ class UKF {
   MatrixXd Xsig_pred_;
 
   // radar measurements
-  MatrixXd Zsig_radar_;
-  MatrixXd S_radar_;
-  MatrixXd z_pred_radar_;
+  const int n_radar_ = 3;
+  Measurement radar_measurement_;
 
   // lidar measurements
-  MatrixXd Zsig_lidar_;
-  MatrixXd S_lidar_;
-  MatrixXd z_pred_lidar_;
+  const int n_lidar_ = 2;
+  Measurement lidar_measurement_;
 
   /**
    * Constructor
@@ -111,15 +104,17 @@ class UKF {
    * Updates the state and the state covariance matrix using a laser measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateStateWithLidarMeasurement(MeasurementPackage meas_package);
+  // void UpdateWithLidarMeasurement(MeasurementPackage meas_package);
+  void UpdateWithMeasurement(MeasurementPackage, Measurement);
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateStateWithRadarMeasurement(MeasurementPackage meas_package);
+  // void UpdateWithRadarMeasurement(MeasurementPackage meas_package);
 
   void AugmentSigmaPoints();
+  void MapPredictionToMeasurement(Measurement&);
   void MapPredictionToLidarMeasurement();
   void MapPredictionToRadarMeasurement();
 };
