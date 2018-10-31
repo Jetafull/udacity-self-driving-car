@@ -29,10 +29,10 @@ UKF::UKF() {
   for (int i = 0; i < n_x_; i++) P_(i, i) = 1.0;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 0.3;
+  std_a_ = 3;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.3;
+  std_yawdd_ = 3;
 
   // DO NOT MODIFY measurement noise values below these are provided by the
   // sensor manufacturer.
@@ -85,7 +85,7 @@ UKF::UKF() {
   // lidar measurement prediction
   lidar_measurement_.n = n_lidar_;
   lidar_measurement_.z_pred = VectorXd(n_lidar_);
-  lidar_measurement_.S = MatrixXd(n_lidar_, 2 * n_aug_ + 1);
+  lidar_measurement_.S = MatrixXd(n_lidar_, n_lidar_);
   lidar_measurement_.Zsig = MatrixXd(n_lidar_, 2 * n_aug_ + 1);
   lidar_measurement_.R = MatrixXd(n_lidar_, n_lidar_);
   lidar_measurement_.R << std_laspx_ * std_laspx_, 0, 0,
@@ -95,7 +95,7 @@ UKF::UKF() {
   // radar measurement prediction
   radar_measurement_.n = n_radar_;
   radar_measurement_.z_pred = VectorXd(n_radar_);
-  radar_measurement_.S = MatrixXd(n_radar_, 2 * n_aug_ + 1);
+  radar_measurement_.S = MatrixXd(n_radar_, n_radar_);
   radar_measurement_.Zsig = MatrixXd(n_radar_, 2 * n_aug_ + 1);
   radar_measurement_.R = MatrixXd(n_radar_, n_radar_);
   radar_measurement_.R << std_radr_ * std_radr_, 0, 0, 0,
@@ -133,7 +133,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
       cout << "Initializing with LASER data" << endl;
       x_ << measurement_pack.raw_measurements_(0),
           measurement_pack.raw_measurements_(1), 0, 0, 0;
-      cout << "x_\n" << x_ << endl;
     }
 
     // done initializing, no need to predict or update
@@ -155,16 +154,13 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
    */
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // Radar updates
-    cout << "Radar measurement" << endl;
     MapPredictionToRadarMeasurement();
     UpdateWithMeasurement(measurement_pack, radar_measurement_);
   } else {
     // Laser updates
-    cout << "Lidar measurement" << endl;
     MapPredictionToLidarMeasurement();
     UpdateWithMeasurement(measurement_pack, lidar_measurement_);
   }
-  cout << "Finish updating measurement" << endl;
 }
 
 /**
@@ -184,7 +180,7 @@ void UKF::Predict(double delta_t) {
     float nu_yawdd = Xsig_aug_(6, i);
 
     float px_p, py_p;
-    if (fabs(psi < 0.0001)) {
+    if (fabs(psi_dot < 0.0001)) {
       px_p = px + v * cos(psi) * delta_t;
       py_p = py + v * sin(psi) * delta_t;
     } else {
@@ -308,7 +304,7 @@ void UKF::MapPredictionToRadarMeasurement() {
   // transform sigma points into measurement space
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  // 2n+1 simga points
 
-    // extract values for better readibility
+    // extract values for better readability
     double p_x = Xsig_pred_(0, i);
     double p_y = Xsig_pred_(1, i);
     double v = Xsig_pred_(2, i);
@@ -321,7 +317,7 @@ void UKF::MapPredictionToRadarMeasurement() {
     float c1 = p_x * p_x + p_y * p_y;
     if (fabs(c1) < 0.0001) {
       cout << "Division by zero in radar.Zsig " << endl;
-      return;
+      continue;
     } else {
       radar_measurement_.Zsig(0, i) = sqrt(c1);         // r
       radar_measurement_.Zsig(1, i) = atan2(p_y, p_x);  // phi
@@ -335,13 +331,9 @@ void UKF::MapPredictionToRadarMeasurement() {
 void UKF::MapPredictionToLidarMeasurement() {
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  // 2n+1 simga points
 
-    // extract values for better readibility
-    double p_x = Xsig_pred_(0, i);
-    double p_y = Xsig_pred_(1, i);
-
     // measurement model
-    lidar_measurement_.Zsig(0, i) = p_x;
-    lidar_measurement_.Zsig(1, i) = p_y;
+    lidar_measurement_.Zsig(0, i) = Xsig_pred_(0, i);
+    lidar_measurement_.Zsig(1, i) = Xsig_pred_(1, i);
   }
   MapPredictionToMeasurement(lidar_measurement_);
 }
@@ -349,20 +341,15 @@ void UKF::MapPredictionToLidarMeasurement() {
 void UKF::MapPredictionToMeasurement(Measurement& m) {
   // mean predicted measurement
   m.z_pred.fill(0.0);
-  for (int i = 0; i < 2 * m.n + 1; i++) {
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     m.z_pred = m.z_pred + weights_(i) * m.Zsig.col(i);
   }
 
   // innovation covariance matrix m.S
-
   m.S.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  // 2n+1 simga points
-    cout << "m.S: " << m.S << endl;
     // residual
-    cout << "\n\nm.Zsig\n\n" << m.Zsig << endl;
-    cout << "\nm.z_pred\n" << m.z_pred << endl;
     VectorXd z_diff = m.Zsig.col(i) - m.z_pred;
-    cout << "\nz_diff\n" << z_diff << endl;
 
     // angle normalization
     if (m.sensor_type == MeasurementPackage::RADAR) {
