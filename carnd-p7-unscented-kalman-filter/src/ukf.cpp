@@ -87,8 +87,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
     cout << "Unscented Kalman Filter Initialization " << endl;
     x_ << 1, 1, 1, 1, 0.5;
     P_.fill(0.0);
-    P_ << 0.25, 0, 0, 0, 0, 0, 0.25, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
-        0, 0, 0, 1;
+    P_ << 0.1, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1;
 
     // use measurement as the previous_timestamps
     time_us_ = measurement_pack.timestamp_;
