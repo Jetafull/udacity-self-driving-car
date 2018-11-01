@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include "Eigen/Dense"
-#include "measurement.h"
 #include "measurement_package.h"
 
 using Eigen::MatrixXd;
@@ -62,20 +61,11 @@ class UKF {
   const int n_aug_ = 7;
 
   ///* Sigma point spreading parameter
-  const double lambda_ = 3 - n_aug_;
+  const double lambda_ = 3 - n_x_;
 
-  VectorXd x_aug_;
-  MatrixXd P_aug_;
-  MatrixXd Xsig_aug_;
   MatrixXd Xsig_pred_;
-
-  // radar measurements
-  const int n_radar_ = 3;
-  Measurement radar_measurement_;
-
-  // lidar measurements
-  const int n_lidar_ = 2;
-  Measurement lidar_measurement_;
+  double nis_laser_;
+  double nis_radar_;
 
   /**
    * Constructor
@@ -105,18 +95,14 @@ class UKF {
    * @param meas_package The measurement at k+1
    */
   // void UpdateWithLidarMeasurement(MeasurementPackage meas_package);
-  void UpdateWithMeasurement(MeasurementPackage, Measurement);
+  void UpdateWithLidarMeasurement(MeasurementPackage);
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
    * @param meas_package The measurement at k+1
    */
   // void UpdateWithRadarMeasurement(MeasurementPackage meas_package);
-
-  void AugmentSigmaPoints();
-  void MapPredictionToMeasurement(Measurement&);
-  void MapPredictionToLidarMeasurement();
-  void MapPredictionToRadarMeasurement();
+  void UpdateWithRadarMeasurement(MeasurementPackage);
 };
 
 #endif /* UKF_H */
