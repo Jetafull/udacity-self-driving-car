@@ -63,9 +63,23 @@ class UKF {
   ///* Sigma point spreading parameter
   const double lambda_ = 3 - n_aug_;
 
+  const int n_laser_ = 2;
+  const int n_radar_ = 3;
+
+  ///* Predicted sigma points
   MatrixXd Xsig_pred_;
+
+  ///* NIS of laser
   double nis_laser_;
+
+  ///* NIS of radar
   double nis_radar_;
+
+  ///* Measurement noise covariance matrix for laser
+  MatrixXd R_laser_;
+
+  ///* Measurement noise covariance matrix for radar
+  MatrixXd R_radar_;
 
   /**
    * Constructor

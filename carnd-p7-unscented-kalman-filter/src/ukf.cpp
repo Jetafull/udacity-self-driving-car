@@ -51,13 +51,6 @@ UKF::UKF() {
   // DO NOT MODIFY measurement noise values above these are provided by the
   // sensor manufacturer.
 
-  /**
-  TODO:
-
-  Complete the initialization. See ukf.h for other member properties.
-
-  Hint: one or more values initialized above might be wildly off...
-  */
   // set vector for weights
   weights_ = VectorXd(2 * n_aug_ + 1);
   weights_(0) = lambda_ / (lambda_ + n_aug_);
@@ -73,6 +66,13 @@ UKF::UKF() {
 
   nis_laser_ = 0.0;
   nis_radar_ = 0.0;
+
+  R_laser_ = MatrixXd(n_laser_, n_laser_);
+  R_laser_ << std_laspx_ * std_laspx_, 0, 0, std_laspy_ * std_laspy_;
+
+  R_radar_ = MatrixXd(n_radar_, n_radar_);
+  R_radar_ << std_radr_ * std_radr_, 0, 0, 0, std_radphi_ * std_radphi_, 0, 0,
+      0, std_radrd_ * std_radrd_;
 }
 
 UKF::~UKF() {}
@@ -296,10 +296,7 @@ void UKF::UpdateWithRadarMeasurement(MeasurementPackage meas_package) {
   }
 
   // add measurement noise covariance matrix
-  MatrixXd R = MatrixXd(n_z, n_z);
-  R << std_radr_ * std_radr_, 0, 0, 0, std_radphi_ * std_radphi_, 0, 0, 0,
-      std_radrd_ * std_radrd_;
-  S = S + R;
+  S = S + R_radar_;
 
   /** Update with measurements **/
   // create matrix for cross correlation Tc
@@ -380,9 +377,7 @@ void UKF::UpdateWithLidarMeasurement(MeasurementPackage meas_package) {
   }
 
   // add measurement noise covariance matrix
-  MatrixXd R = MatrixXd(n_z, n_z);
-  R << std_laspx_ * std_laspx_, 0, 0, std_laspy_ * std_laspy_;
-  S = S + R;
+  S = S + R_laser_;
 
   /** Update with measurements **/
   // create matrix for cross correlation Tc
