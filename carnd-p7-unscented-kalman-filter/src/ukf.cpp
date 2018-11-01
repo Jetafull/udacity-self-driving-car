@@ -34,7 +34,7 @@ UKF::UKF() {
 
   // DO NOT MODIFY measurement noise values below these are provided by the
   // sensor manufacturer.
-  // Laser measurement noise standard deviation position1 in m
+  // Laser measurement noise standard deviaton position1 in m
   std_laspx_ = 0.15;
 
   // Laser measurement noise standard deviation position2 in m
@@ -85,9 +85,10 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   if (!is_initialized_) {
     // first measurement
     cout << "Unscented Kalman Filter Initialization " << endl;
-    x_ << 1, 1, 1, 1, 0.1;
+    x_ << 1, 1, 1, 1, 0.5;
     P_.fill(0.0);
-    for (int i = 0; i < n_x_; i++) P_(i, i) = 1.0;
+    P_ << 0.25, 0, 0, 0, 0, 0, 0.25, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 1;
 
     // use measurement as the previous_timestamps
     time_us_ = measurement_pack.timestamp_;
@@ -104,7 +105,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
     }
 
     // done initializing, no need to predict or update
-    cout << "Finished initialization" << endl;
     is_initialized_ = true;
     return;
   }
@@ -123,15 +123,12 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR &&
       use_radar_) {
     // Radar updates
-    cout << "Update with radar " << endl;
     UpdateWithRadarMeasurement(measurement_pack);
   } else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER &&
              use_laser_) {
     // Laser updates
-    cout << "Update with lidar " << endl;
     UpdateWithLidarMeasurement(measurement_pack);
   }
-  cout << "x_:\n" << x_ << endl;
 }
 
 /**
@@ -242,9 +239,6 @@ void UKF::Predict(double delta_t) {
 
     P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
   }
-
-  cout << "x_:\n" << x_ << endl;
-  cout << "P_:\n" << P_ << endl;
 }
 
 void UKF::UpdateWithRadarMeasurement(MeasurementPackage meas_package) {
