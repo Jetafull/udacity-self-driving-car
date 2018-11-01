@@ -61,7 +61,7 @@ class UKF {
   const int n_aug_ = 7;
 
   ///* Sigma point spreading parameter
-  const double lambda_ = 3 - n_x_;
+  const double lambda_ = 3 - n_aug_;
 
   MatrixXd Xsig_pred_;
   double nis_laser_;
