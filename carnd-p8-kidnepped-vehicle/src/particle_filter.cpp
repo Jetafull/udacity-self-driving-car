@@ -183,17 +183,34 @@ void ParticleFilter::resample() {
   // TODO: Resample particles with replacement with probability proportional to
   // their weight. NOTE: You may find std::discrete_distribution helpful here.
   //   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
+  vector<Particle> new_particles;
+
+  vector<double> particle_weights;
+  for (const auto& particle : particles) {
+    particle_weights.push_back(particle.weight);
+  }
+
+  default_random_engine gen;
+  std::discrete_distribution<int> discrete_generator(particle_weights.begin(),
+                                                     particle_weights.end());
+
+  for (int i = 0; i < particles.size(); i++) {
+    int sampled_id = discrete_generator(gen);
+    new_particles.push_back(particles[sampled_id]);
+  }
+
+  particles = new_particles;
 }
 
 Particle ParticleFilter::SetAssociations(Particle& particle,
                                          const std::vector<int>& associations,
                                          const std::vector<double>& sense_x,
                                          const std::vector<double>& sense_y) {
-  // particle: the particle to assign each listed association, and association's
-  // (x,y) world coordinates mapping to
-  // associations: The landmark id that goes along with each listed association
-  // sense_x: the associations x mapping already converted to world coordinates
-  // sense_y: the associations y mapping already converted to world coordinates
+  // particle: the particle t(geo assign each listed association, and
+  // association's (x,y) world coordinates mapping to associations: The landmark
+  // id that goes along with each listed association sense_x: the associations x
+  // mapping already converted to world coordinates sense_y: the associations y
+  // mapping already converted to world coordinates
 
   particle.associations = associations;
   particle.sense_x = sense_x;
