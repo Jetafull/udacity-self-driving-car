@@ -167,8 +167,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
       likelihood_measurements *=
           0.5 / (M_PI * sigma_x * sigma_y) *
-          exp(-1 * pow((x - mu_x), 2) / (2 * pow(sigma_x, 2)) +
-              pow(y - mu_y, 2) / (2 * pow(sigma_y, 2)));
+          exp(-1.0 * pow((x - mu_x), 2) / (2.0 * pow(sigma_x, 2)) +
+              pow(y - mu_y, 2) / (2.0 * pow(sigma_y, 2)));
     }
     weight_normalization_term += likelihood_measurements;
     particle.weight = likelihood_measurements;
