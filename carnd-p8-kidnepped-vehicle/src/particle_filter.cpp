@@ -161,7 +161,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       sense_x.push_back(ob_on_map.x);
       sense_y.push_back(ob_on_map.y);
     }
-    SetAssociations(particle, associations, sense_x, sense_y);
+    setAssociations(particle, associations, sense_x, sense_y);
 
     // Update weights with multivariate Gaussian
     double likelihood_measurements = 1.0;
@@ -212,7 +212,7 @@ void ParticleFilter::resample() {
   particles = new_particles;
 }
 
-Particle ParticleFilter::SetAssociations(Particle& particle,
+Particle ParticleFilter::setAssociations(Particle& particle,
                                          const std::vector<int>& associations,
                                          const std::vector<double>& sense_x,
                                          const std::vector<double>& sense_y) {
