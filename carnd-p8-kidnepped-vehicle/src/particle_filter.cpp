@@ -137,9 +137,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       }
     }
 
-    // Transform observations from vehicle coordinate system to map coordinate
-    // system
-    std::vector<LandmarkObs> observations_on_map;
+    // Transform observations from vehicle coordinate to map coordinate
+    vector<LandmarkObs> observations_on_map;
     for (const auto& observation : observations) {
       LandmarkObs ob_on_map = {};
       ob_on_map.id = observation.id;
