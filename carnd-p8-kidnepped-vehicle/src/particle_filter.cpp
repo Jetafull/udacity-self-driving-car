@@ -154,27 +154,14 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     dataAssociation(predicted, observations_on_map);
 
-    // Set associations for debugging
-    // vector<int> associations;
-    // vector<double> sense_x;
-    // vector<double> sense_y;
-    // for (const auto& ob_on_map : observations_on_map) {
-    //   associations.push_back(ob_on_map.id);
-    //   sense_x.push_back(ob_on_map.x);
-    //   sense_y.push_back(ob_on_map.y);
-    // }
-    // setAssociations(particle, associations, sense_x, sense_y);
-
     // Update weights with multivariate Gaussian
     double likelihood_measurements = 1.0;
 
     // Use x and y from nearest landmark
     for (const auto& ob_on_map : observations_on_map) {
-      double mu_x, mu_y;
-
       // The ob_on_map.id is the Map Id, not list index. It starts from 1.
-      mu_x = map_landmarks.landmark_list[ob_on_map.id - 1].x_f;
-      mu_y = map_landmarks.landmark_list[ob_on_map.id - 1].y_f;
+      double mu_x = map_landmarks.landmark_list[ob_on_map.id - 1].x_f;
+      double mu_y = map_landmarks.landmark_list[ob_on_map.id - 1].y_f;
 
       double prob = calc_gaussian_prob_2d(ob_on_map.x, ob_on_map.y, mu_x, mu_y,
                                           sigma_x, sigma_y);

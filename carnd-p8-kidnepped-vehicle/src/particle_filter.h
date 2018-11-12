@@ -36,9 +36,9 @@ class ParticleFilter {
   // Set of current particles
   std::vector<Particle> particles;
 
-  // Constructor
+  // Constructo
   // @param num_particles Number of particles
-  ParticleFilter() : num_particles(5), is_initialized(false) {}
+  ParticleFilter() : num_particles(10), is_initialized(false) {}
 
   // Destructor
   ~ParticleFilter() {}
