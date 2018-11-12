@@ -152,6 +152,17 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // Associate each predicted observations with observations
     dataAssociation(predicted, observations_on_map);
 
+    // Set associations for debugging
+    vector<int> associations;
+    vector<double> sense_x;
+    vector<double> sense_y;
+    for (const auto& ob_on_map : observations_on_map) {
+      associations.push_back(ob_on_map.id);
+      sense_x.push_back(ob_on_map.x);
+      sense_y.push_back(ob_on_map.y);
+    }
+    SetAssociations(particle, associations, sense_x, sense_y);
+
     // Update weights with multivariate Gaussian
     double likelihood_measurements = 1.0;
     for (const auto& ob_on_map : observations_on_map) {
@@ -206,10 +217,10 @@ Particle ParticleFilter::SetAssociations(Particle& particle,
                                          const std::vector<double>& sense_x,
                                          const std::vector<double>& sense_y) {
   // particle: the particle t(geo assign each listed association, and
-  // association's (x,y) world coordinates mapping to associations: The landmark
-  // id that goes along with each listed association sense_x: the associations x
-  // mapping already converted to world coordinates sense_y: the associations y
-  // mapping already converted to world coordinates
+  // association's (x,y) world coordinates mapping to
+  // associations: The landmark id that goes along with each listed association
+  // sense_x: the associations x mapping already converted to world coordinates
+  // sense_y: the associations y mapping already converted to world coordinates
 
   particle.associations = associations;
   particle.sense_x = sense_x;
