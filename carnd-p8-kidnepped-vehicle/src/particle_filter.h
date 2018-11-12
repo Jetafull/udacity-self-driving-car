@@ -101,7 +101,7 @@ class ParticleFilter {
    * to make sure transformations are correct and associations correctly
    * connected
    */
-  Particle setAssociations(Particle& particle,
+  Particle SetAssociations(Particle& particle,
                            const std::vector<int>& associations,
                            const std::vector<double>& sense_x,
                            const std::vector<double>& sense_y);

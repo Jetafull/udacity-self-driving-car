@@ -71,7 +71,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
       y += velocity / yaw_rate * (cos(theta) - cos(theta + yaw_rate * delta_t));
       theta += yaw_rate * delta_t;
     }
-    cout << "x: " << x << endl;
 
     // Add random Gaussian noise
     normal_distribution<double> dist_x(x, std_pos[0]);
@@ -154,15 +153,15 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     dataAssociation(predicted, observations_on_map);
 
     // Set associations for debugging
-    vector<int> associations;
-    vector<double> sense_x;
-    vector<double> sense_y;
-    for (const auto& ob_on_map : observations_on_map) {
-      associations.push_back(ob_on_map.id);
-      sense_x.push_back(ob_on_map.x);
-      sense_y.push_back(ob_on_map.y);
-    }
-    setAssociations(particle, associations, sense_x, sense_y);
+    // vector<int> associations;
+    // vector<double> sense_x;
+    // vector<double> sense_y;
+    // for (const auto& ob_on_map : observations_on_map) {
+    //   associations.push_back(ob_on_map.id);
+    //   sense_x.push_back(ob_on_map.x);
+    //   sense_y.push_back(ob_on_map.y);
+    // }
+    // setAssociations(particle, associations, sense_x, sense_y);
 
     // Update weights with multivariate Gaussian
     double likelihood_measurements = 1.0;
@@ -213,7 +212,7 @@ void ParticleFilter::resample() {
   particles = new_particles;
 }
 
-Particle ParticleFilter::setAssociations(Particle& particle,
+Particle ParticleFilter::SetAssociations(Particle& particle,
                                          const std::vector<int>& associations,
                                          const std::vector<double>& sense_x,
                                          const std::vector<double>& sense_y) {
