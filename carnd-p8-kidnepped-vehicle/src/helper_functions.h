@@ -234,4 +234,13 @@ inline bool read_landmark_data(std::string filename,
   return true;
 }
 
+inline double calc_gaussian_prob_2d(double x, double y, double mu_x,
+                                    double mu_y, double sigma_x,
+                                    double sigma_y) {
+  double normalization_term = 0.5 / (M_PI * sigma_x * sigma_y);
+  double exponent = exp(-1.0 * (0.5 * pow(x - mu_x, 2) / pow(sigma_x, 2) +
+                                0.5 * pow(y - mu_y, 2) / pow(sigma_y, 2)));
+  return normalization_term * exponent;
+}
+
 #endif /* HELPER_FUNCTIONS_H_ */

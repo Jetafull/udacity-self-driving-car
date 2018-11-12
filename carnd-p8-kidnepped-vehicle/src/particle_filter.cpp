@@ -40,6 +40,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     particle.y = dist_y(gen);
     particle.theta = dist_theta(gen);
     particle.weight = 1.0;
+    weights.push_back(1.0);
 
     particles.push_back(particle);
   }
@@ -63,7 +64,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     double theta = particles[i].theta;
 
     // Apply motion model
-    if (yaw_rate == 0) {
+    if (fabs(yaw_rate) < 0.01) {
       x += velocity * delta_t * cos(theta);
       y += velocity * delta_t * sin(theta);
     } else {
@@ -81,6 +82,10 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     particles[i].y = dist_y(gen);
     particles[i].theta = dist_theta(gen);
   }
+  // for (auto& p : particles) {
+  //   cout << p.id << ", " << p.x << ", " << p.y << endl;
+  // }
+  // cout << endl;
 }
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted,
@@ -90,15 +95,18 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted,
   // landmark. NOTE: this method will NOT be called by the grading code. But you
   // will probably find it useful to implement this method and use it as a
   // helper during the updateWeights phase.
-  double min_dist = std::numeric_limits<double>::infinity();
   for (auto& observation : observations) {
+    double min_dist = std::numeric_limits<double>::infinity();
     double x = observation.x;
     double y = observation.y;
 
     for (const auto& pred : predicted) {
       double distance = sqrt(pow(x - pred.x, 2) + pow(y - pred.y, 2));
-      if (distance < min_dist) observation.id = pred.id;
-        }
+      if (distance < min_dist) {
+        observation.id = pred.id;
+        min_dist = distance;
+      }
+    }
   }
 }
 
@@ -111,28 +119,24 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   // NOTE: The observations are given in the VEHICLE'S coordinate system. Your
   // particles are located according to the MAP'S coordinate system. You will
   // need to transform between the two systems. Keep in mind that this
-  // transformation requires both rotation AND translation (but no scaling). The
-  // following is a good resource for the theory:
+  // transformation requires both rotation AND translation (but no scaling).
+  // The following is a good resource for the theory:
   // https://www.willamette.edu/~gorr/classes/GeneralGraphics/Transforms/transforms2d.htm
   // and the following is a good resource for the actual equation to implement
   // (look at equation 3.33 http://planning.cs.uiuc.edu/node99.html
 
+  // normalization_term is the sum all particles' likelihood
   double weight_normalization_term = 0.0;
+
   for (auto& particle : particles) {
     // Predicted measurement for each particles
     std::vector<LandmarkObs> predicted;
 
-    double x = particle.x;
-    double y = particle.y;
-    double theta = particle.theta;
-
     // Get the predicted observations with the sensor range
     for (const auto& landmark : map_landmarks.landmark_list) {
-      int id_i = landmark.id_i;
-      double x_f = landmark.x_f;
-      double y_f = landmark.y_f;
-      if (sqrt(pow(x - x_f, 2) + pow(y - y_f, 2)) <= sensor_range) {
-        LandmarkObs landmark_ob = {id_i, x_f, y_f};
+      if (sqrt(pow(particle.x - landmark.x_f, 2) +
+               pow(particle.y - landmark.y_f, 2)) <= sensor_range) {
+        LandmarkObs landmark_ob = {landmark.id_i, landmark.x_f, landmark.y_f};
         predicted.push_back(landmark_ob);
       }
     }
@@ -142,14 +146,13 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     for (const auto& observation : observations) {
       LandmarkObs ob_on_map = {};
       ob_on_map.id = observation.id;
-      ob_on_map.x =
-          x + (cos(theta) * observation.x) - (sin(theta) * observation.y);
-      ob_on_map.y =
-          y + (sin(theta) * observation.y) + (cos(theta) * observation.y);
+      ob_on_map.x = particle.x + cos(particle.theta) * observation.x -
+                    sin(particle.theta) * observation.y;
+      ob_on_map.y = particle.y + sin(particle.theta) * observation.x +
+                    (cos(particle.theta) * observation.y);
       observations_on_map.push_back(ob_on_map);
     }
 
-    // Associate each predicted observations with observations
     dataAssociation(predicted, observations_on_map);
 
     // Set associations for debugging
@@ -165,47 +168,53 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     // Update weights with multivariate Gaussian
     double likelihood_measurements = 1.0;
-    for (const auto& ob_on_map : observations_on_map) {
-      int matched_id = ob_on_map.id;
-      double mu_x, mu_y;
-      for (auto& landmark : map_landmarks.landmark_list) {
-        if (landmark.id_i == matched_id) mu_x = landmark.x_f;
-        mu_y = landmark.y_f;
-      }
-      double sigma_x = std_landmark[0];
-      double sigma_y = std_landmark[1];
+    double sigma_x = std_landmark[0];
+    double sigma_y = std_landmark[1];
 
-      likelihood_measurements *=
-          0.5 / (M_PI * sigma_x * sigma_y) *
-          exp(-1.0 * (0.5 * pow(x - mu_x, 2) / pow(sigma_x, 2) +
-                      0.5 * pow(y - mu_y, 2) / pow(sigma_y, 2)));
-      cout << x << ", " << y << ", " << mu_x << ", " << mu_y << endl;
+    // Use x and y from nearest landmark
+    for (const auto& ob_on_map : observations_on_map) {
+      double mu_x, mu_y;
+
+      for (auto& landmark : map_landmarks.landmark_list) {
+        if (landmark.id_i == ob_on_map.id) {
+          mu_x = landmark.x_f;
+          mu_y = landmark.y_f;
+        }
+      }
+
+      double prob = calc_gaussian_prob_2d(ob_on_map.x, ob_on_map.y, mu_x, mu_y,
+                                          sigma_x, sigma_y);
+      likelihood_measurements *= prob;
     }
-    weight_normalization_term += likelihood_measurements;
+
     particle.weight = likelihood_measurements;
+    weight_normalization_term += likelihood_measurements;
   }
 
-  for (auto& particle : particles) {
-    particle.weight /= weight_normalization_term;
+  for (int i = 0; i < num_particles; i++) {
+    particles[i].weight /= weight_normalization_term;
+    weights[i] = particles[i].weight;
+  }
+  double max_weight = 0.0;
+  for (auto& p : particles) {
+    if (p.weight > max_weight) {
+      max_weight = p.weight;
+    }
   }
 }
 
 void ParticleFilter::resample() {
-  // TODO: Resample particles with replacement with probability proportional to
-  // their weight. NOTE: You may find std::discrete_distribution helpful here.
+  // TODO: Resample particles with replacement with probability proportional
+  // to their weight. NOTE: You may find std::discrete_distribution helpful
+  // here.
   //   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
   vector<Particle> new_particles;
 
-  vector<double> particle_weights;
-  for (const auto& particle : particles) {
-    particle_weights.push_back(particle.weight);
-  }
-
   default_random_engine gen;
-  std::discrete_distribution<int> discrete_generator(particle_weights.begin(),
-                                                     particle_weights.end());
+  std::discrete_distribution<int> discrete_generator(weights.begin(),
+                                                     weights.end());
 
-  for (int i = 0; i < particles.size(); i++) {
+  for (int i = 0; i < num_particles; i++) {
     int sampled_id = discrete_generator(gen);
     new_particles.push_back(particles[sampled_id]);
   }
@@ -219,9 +228,10 @@ Particle ParticleFilter::SetAssociations(Particle& particle,
                                          const std::vector<double>& sense_y) {
   // particle: the particle t(geo assign each listed association, and
   // association's (x,y) world coordinates mapping to
-  // associations: The landmark id that goes along with each listed association
-  // sense_x: the associations x mapping already converted to world coordinates
-  // sense_y: the associations y mapping already converted to world coordinates
+  // associations: The landmark id that goes along with each listed
+  // association sense_x: the associations x mapping already converted to
+  // world coordinates sense_y: the associations y mapping already converted
+  // to world coordinates
 
   particle.associations = associations;
   particle.sense_x = sense_x;

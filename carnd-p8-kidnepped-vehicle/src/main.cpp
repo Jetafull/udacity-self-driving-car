@@ -32,7 +32,8 @@ int main() {
   double sensor_range = 50;  // Sensor range [m]
 
   double sigma_pos[3] = {
-      3, 3, 0.05};  // GPS measurement uncertainty [x [m], y [m], theta [rad]]
+      0.3, 0.3,
+      0.01};  // GPS measurement uncertainty [x [m], y [m], theta [rad]]
   double sigma_landmark[2] = {
       0.3, 0.3};  // Landmark measurement uncertainty [x [m], y [m]]
 
@@ -70,6 +71,7 @@ int main() {
                 std::stod(j[1]["sense_theta"].get<std::string>());
 
             pf.init(sense_x, sense_y, sense_theta, sigma_pos);
+            cout << "Particle filter initialized!" << endl;
           } else {
             // Predict the vehicle's next state from previous (noiseless
             // control) data.
@@ -119,6 +121,7 @@ int main() {
           // filter over all time steps so far.
           vector<Particle> particles = pf.particles;
           int num_particles = particles.size();
+          cout << "num_particles: " << num_particles << endl;
           double highest_weight = -1.0;
           Particle best_particle;
           double weight_sum = 0.0;
@@ -129,6 +132,7 @@ int main() {
             }
             weight_sum += particles[i].weight;
           }
+          cout << "sum w " << weight_sum << endl;
           cout << "highest w " << highest_weight << endl;
           cout << "average w " << weight_sum / num_particles << endl;
 
