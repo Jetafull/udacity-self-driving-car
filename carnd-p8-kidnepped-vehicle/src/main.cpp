@@ -121,7 +121,6 @@ int main() {
           // filter over all time steps so far.
           vector<Particle> particles = pf.particles;
           int num_particles = particles.size();
-          cout << "num_particles: " << num_particles << endl;
           double highest_weight = -1.0;
           Particle best_particle;
           double weight_sum = 0.0;
@@ -133,7 +132,6 @@ int main() {
             weight_sum += particles[i].weight;
           }
           cout << "sum w " << weight_sum << endl;
-          cout << "highest w " << highest_weight << endl;
           cout << "average w " << weight_sum / num_particles << endl;
 
           json msgJson;
