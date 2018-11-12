@@ -96,9 +96,9 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted,
     double y = observation.y;
 
     for (const auto& pred : predicted) {
-      double distance = sqrt(pow((x - pred.x), 2) + pow((y - pred.y), 2));
+      double distance = sqrt(pow(x - pred.x, 2) + pow(y - pred.y, 2));
       if (distance < min_dist) observation.id = pred.id;
-    }
+        }
   }
 }
 
@@ -145,7 +145,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       ob_on_map.x =
           x + (cos(theta) * observation.x) - (sin(theta) * observation.y);
       ob_on_map.y =
-          y + (sin(theta) * observation.x) - (cos(theta) * observation.y);
+          y + (sin(theta) * observation.y) + (cos(theta) * observation.y);
       observations_on_map.push_back(ob_on_map);
     }
 
@@ -179,6 +179,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
           0.5 / (M_PI * sigma_x * sigma_y) *
           exp(-1.0 * (0.5 * pow(x - mu_x, 2) / pow(sigma_x, 2) +
                       0.5 * pow(y - mu_y, 2) / pow(sigma_y, 2)));
+      cout << x << ", " << y << ", " << mu_x << ", " << mu_y << endl;
     }
     weight_normalization_term += likelihood_measurements;
     particle.weight = likelihood_measurements;
