@@ -115,6 +115,18 @@ int main() {
           // Update the weights and resample
           pf.updateWeights(sensor_range, sigma_landmark, noisy_observations,
                            map);
+
+          double weights_mean = 0.0;
+          double weights_var = 0.0;
+          for (auto &particle : pf.particles) {
+            weights_mean += particle.weight;
+          }
+          weights_mean /= pf.particles.size();
+          for (auto &particle : pf.particles) {
+            weights_var += pow(particle.weight - weights_mean, 2);
+          }
+          weights_var /= pf.particles.size();
+          cout << "weights_var: " << weights_var << endl;
           pf.resample();
 
           // Calculate and output the average weighted error of the particle
@@ -141,10 +153,10 @@ int main() {
 
           // Optional message data used for debugging particle's sensing and
           // associations
-          msgJson["best_particle_associations"] =
-              pf.getAssociations(best_particle);
-          msgJson["best_particle_sense_x"] = pf.getSenseX(best_particle);
-          msgJson["best_particle_sense_y"] = pf.getSenseY(best_particle);
+          // msgJson["best_particle_associations"] =
+          //     pf.getAssociations(best_particle);
+          // msgJson["best_particle_sense_x"] = pf.getSenseX(best_particle);
+          // msgJson["best_particle_sense_y"] = pf.getSenseY(best_particle);
 
           auto msg = "42[\"best_particle\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;

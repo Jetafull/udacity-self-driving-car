@@ -38,7 +38,7 @@ class ParticleFilter {
 
   // Constructor
   // @param num_particles Number of particles
-  ParticleFilter() : num_particles(30), is_initialized(false) {}
+  ParticleFilter() : num_particles(5), is_initialized(false) {}
 
   // Destructor
   ~ParticleFilter() {}

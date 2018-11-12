@@ -82,10 +82,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     particles[i].y = dist_y(gen);
     particles[i].theta = dist_theta(gen);
   }
-  // for (auto& p : particles) {
-  //   cout << p.id << ", " << p.x << ", " << p.y << endl;
-  // }
-  // cout << endl;
 }
 
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted,
@@ -101,7 +97,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted,
     double y = observation.y;
 
     for (const auto& pred : predicted) {
-      double distance = sqrt(pow(x - pred.x, 2) + pow(y - pred.y, 2));
+      double distance = calc_dist(x, y, pred.x, pred.y);
       if (distance < min_dist) {
         observation.id = pred.id;
         min_dist = distance;
@@ -127,6 +123,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
   // normalization_term is the sum all particles' likelihood
   double weight_normalization_term = 0.0;
+  double sigma_x = std_landmark[0];
+  double sigma_y = std_landmark[1];
 
   for (auto& particle : particles) {
     // Predicted measurement for each particles
@@ -134,8 +132,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     // Get the predicted observations with the sensor range
     for (const auto& landmark : map_landmarks.landmark_list) {
-      if (sqrt(pow(particle.x - landmark.x_f, 2) +
-               pow(particle.y - landmark.y_f, 2)) <= sensor_range) {
+      double distance =
+          calc_dist(particle.x, particle.y, landmark.x_f, landmark.y_f);
+      if (distance <= sensor_range) {
         LandmarkObs landmark_ob = {landmark.id_i, landmark.x_f, landmark.y_f};
         predicted.push_back(landmark_ob);
       }
@@ -168,19 +167,14 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 
     // Update weights with multivariate Gaussian
     double likelihood_measurements = 1.0;
-    double sigma_x = std_landmark[0];
-    double sigma_y = std_landmark[1];
 
     // Use x and y from nearest landmark
     for (const auto& ob_on_map : observations_on_map) {
       double mu_x, mu_y;
 
-      for (auto& landmark : map_landmarks.landmark_list) {
-        if (landmark.id_i == ob_on_map.id) {
-          mu_x = landmark.x_f;
-          mu_y = landmark.y_f;
-        }
-      }
+      // The ob_on_map.id is the Map Id, not list index. It starts from 1.
+      mu_x = map_landmarks.landmark_list[ob_on_map.id - 1].x_f;
+      mu_y = map_landmarks.landmark_list[ob_on_map.id - 1].y_f;
 
       double prob = calc_gaussian_prob_2d(ob_on_map.x, ob_on_map.y, mu_x, mu_y,
                                           sigma_x, sigma_y);
@@ -195,12 +189,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     particles[i].weight /= weight_normalization_term;
     weights[i] = particles[i].weight;
   }
-  double max_weight = 0.0;
-  for (auto& p : particles) {
-    if (p.weight > max_weight) {
-      max_weight = p.weight;
-    }
-  }
 }
 
 void ParticleFilter::resample() {
@@ -211,8 +199,7 @@ void ParticleFilter::resample() {
   vector<Particle> new_particles;
 
   default_random_engine gen;
-  std::discrete_distribution<int> discrete_generator(weights.begin(),
-                                                     weights.end());
+  discrete_distribution<int> discrete_generator(weights.begin(), weights.end());
 
   for (int i = 0; i < num_particles; i++) {
     int sampled_id = discrete_generator(gen);
