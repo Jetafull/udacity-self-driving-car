@@ -6,7 +6,10 @@ using namespace std;
  * TODO: Complete the PID class.
  */
 
-PID::PID() {}
+PID::PID() {
+  cte_sum = 0.0;
+  initialized = false;
+}
 
 PID::~PID() {}
 

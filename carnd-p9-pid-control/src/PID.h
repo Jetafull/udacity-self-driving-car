@@ -20,10 +20,7 @@ class PID {
   /*
    * Constructor
    */
-  PID() {
-    cte_sum = 0.0;
-    initialized = false;
-  };
+  PID();
 
   /*
    * Destructor.
