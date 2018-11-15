@@ -1,32 +1,20 @@
-#ifndef pid_H
-#define pid_H
+#ifndef PID_PID_BASE_H
+#define PID_PID_BASE_H
 
 #include "controller.h"
 
 class PID : public Controller {
- public:
-  // Errors
-  double p_error;
-  double i_error;
-  double d_error;
+public:
+    PID(Coefficients coefficients);
 
-  PID(Taus taus);
+    // Update the PID error variables given cross track error.
+    void UpdateError(double cte);
+    double CalculateSteerValue();
 
-  /*
-   * Destructor.
-   */
-  virtual ~PID();
-
-  /*
-   * Update the PID error variables given cross track error.
-   */
-  void UpdateError(double cte);
-  double CalculateSteerValue();
-
- private:
-  Taus taus;
-  double cte_prev;
-  bool initialized;
+private:
+    double cte_prev;
+    bool initialized;
 };
 
-#endif /* pid_H */
+
+#endif //PID_PID_BASE_H

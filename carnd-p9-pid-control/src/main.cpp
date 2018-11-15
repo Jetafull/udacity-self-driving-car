@@ -1,8 +1,8 @@
 #include <math.h>
 #include <uWS/uWS.h>
 #include <iostream>
-#include "PID.h"
 #include "json.hpp"
+#include "pid.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -30,7 +30,8 @@ std::string hasData(std::string s) {
 int main() {
   uWS::Hub h;
 
-  PID pid(0.15, 0, 2.5);
+  Coefficients coefficients = {0.15, 0.0001, 2.5};
+  PID pid(coefficients);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {

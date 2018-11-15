@@ -7,7 +7,7 @@ add_definitions(-std=c++11)
 set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
-set(sources src/pid_twiddle.cpp src/pid.cpp src/main.cpp)
+set(sources src/controller.h src/main.cpp src/pid.cpp src/pid.h)
 
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
