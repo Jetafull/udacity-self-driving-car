@@ -1,7 +1,9 @@
-#ifndef PID_H
-#define PID_H
+#ifndef pid_H
+#define pid_H
 
-class PID {
+#include "controller.h"
+
+class PID : public Controller {
  public:
   // Errors
   double p_error;
@@ -39,4 +41,4 @@ class PID {
   bool initialized;
 };
 
-#endif /* PID_H */
+#endif /* pid_H */
