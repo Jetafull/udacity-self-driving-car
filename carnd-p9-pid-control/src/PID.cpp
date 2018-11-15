@@ -7,10 +7,9 @@ using namespace std;
  * TODO: Complete the PID class.
  */
 
-PID::PID(double tau_p, double tau_i, double tau_d)
-    : tau_p(tau_p), tau_i(tau_i), tau_d(tau_d) {
-  cte_prev = 0.0;
+PID::PID(Taus taus) {
   initialized = false;
+  cte_prev = 0.0;
 
   p_error = 0.0;
   i_error = 0.0;
@@ -37,6 +36,6 @@ void PID::UpdateError(double cte) {
   i_error += cte;
 }
 
-double PID::CalculateSteerValue() {
-  return -tau_p * p_error - tau_i * i_error - tau_d * d_error;
-}
+// double PID::CalculateSteerValue() {
+//   return -taus.tau_p * p_error - taus.tau_i * i_error - taus.tau_d * d_error;
+// }

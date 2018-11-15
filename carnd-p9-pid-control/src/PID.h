@@ -10,17 +10,7 @@ class PID : public Controller {
   double i_error;
   double d_error;
 
-  /*
-   * Coefficients
-   */
-  double tau_p;
-  double tau_i;
-  double tau_d;
-
-  /*
-   * Constructor
-   */
-  PID(double tau_p, double tau_i, double tau_d);
+  PID(Taus taus);
 
   /*
    * Destructor.
@@ -34,9 +24,7 @@ class PID : public Controller {
   double CalculateSteerValue();
 
  private:
-  /*
-   * CTE records
-   */
+  Taus taus;
   double cte_prev;
   bool initialized;
 };
