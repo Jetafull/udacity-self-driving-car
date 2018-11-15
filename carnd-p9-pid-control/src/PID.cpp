@@ -1,4 +1,5 @@
 #include "PID.h"
+#include <math.h>
 
 using namespace std;
 
@@ -7,8 +8,12 @@ using namespace std;
  */
 
 PID::PID() {
-  cte_sum = 0.0;
+  cte_prev = 0.0;
   initialized = false;
+
+  p_error = 0.0;
+  i_error = 0.0;
+  d_error = 0.0;
 }
 
 PID::~PID() {}
@@ -20,18 +25,23 @@ void PID::Init(double Kp, double Ki, double Kd) {
 }
 
 void PID::UpdateError(double cte) {
-  p_error = -Kp * cte;
+  // p_error
+  p_error = cte;
 
+  // d_error update
   if (!initialized) {
-    i_error = 0.0;
+    d_error = 0.0;
     cte_prev = cte;
     initialized = true;
   } else {
-    i_error = -Ki * (cte - cte_prev);
+    d_error = cte - cte_prev;
+    cte_prev = cte;
   }
 
-  cte_sum += cte;
-  d_error = -Kd * cte_sum;
+  // i_error
+  i_error += cte;
 }
 
-double PID::TotalError() { return p_error + i_error + d_error; }
+double PID::CalculateSteerValue() {
+  return -Kp * p_error - Ki * i_error - Kd * d_error;
+}
