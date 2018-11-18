@@ -150,14 +150,14 @@ int main() {
           msgJson["throttle"] = throttle_value;
 
           // Display the MPC predicted trajectory
-          int N = result[2];
+          // int N = result[2];
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
-          for (unsigned int i = 3; i < result.size(); i++) {
-            cout << "i= " << i << endl;
-            mpc_x_vals.push_back(result[i]);
-            mpc_y_vals.push_back(result[i + N]);
-          }
+          // for (unsigned int i = 3; i < result.size(); i++) {
+          //   cout << "i= " << i << endl;
+          //   mpc_x_vals.push_back(result[i]);
+          //   mpc_y_vals.push_back(result[i + N]);
+          // }
 
           //.. add (x,y) points to list here, points are in reference to the
           // vehicle's coordinate system
