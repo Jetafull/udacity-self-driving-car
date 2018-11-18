@@ -144,8 +144,6 @@ int main() {
           // NOTE: Remember to divide by deg2rad(25) before you send the
           // steering value back. Otherwise the values will be in between
           // [-deg2rad(25), deg2rad(25] instead of [-1, 1].
-
-          // multiply by -1 to adjust steer value in the simulator system
           msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
 
