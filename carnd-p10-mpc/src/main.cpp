@@ -122,18 +122,18 @@ int main() {
           const double x0 = 0;
           const double y0 = 0;
           const double psi0 = 0;
-          const double cte0 = coeffs[0];
-          const double epsi0 = -atan(coeffs[1]);
+          const double cte0 = coeffs[0] - y0;
+          const double epsi0 = psi0 - atan(coeffs[1]);
 
-          // const double latency = 0.1;
-          // const double Lf = 2.67;
-          // state[0] = x0 + v * cos(psi0) * latency;
-          // state[1] = y0 + v * sin(psi0) * latency;
-          // state[2] = psi0 + v * delta / Lf * latency;
-          // state[3] = v + a * latency;
-          // state[4] = cte0 + (v * sin(epsi0) * latency);
-          // state[5] = epsi0 + (v * atan(coeffs[1]) * latency / Lf);
-          state << x0, y0, psi0, v, cte0, epsi0;
+          const double latency = 0.1;
+          const double Lf = 2.67;
+          state[0] = x0 + v * cos(psi0) * latency;
+          state[1] = y0 + v * sin(psi0) * latency;
+          state[2] = psi0 - v * delta / Lf * latency;
+          state[3] = v + a * latency;
+          state[4] = cte0 + v * sin(epsi0) * latency;
+          state[5] = epsi0 - v * delta / Lf * latency;
+          // state << x0, y0, psi0, v, cte0, epsi0;
 
           auto result = mpc.Solve(state, coeffs);
 
@@ -146,17 +146,18 @@ int main() {
           // [-deg2rad(25), deg2rad(25] instead of [-1, 1].
 
           // multiply by -1 to adjust steer value in the simulator system
-          msgJson["steering_angle"] = -steer_value;
+          msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
 
           // Display the MPC predicted trajectory
+          int N = result[2];
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
-          // for (unsigned int i = 3; i < result.size(); i++) {
-          //   cout << "i= " << i << endl;
-          //   mpc_x_vals.push_back(result[i]);
-          //   mpc_y_vals.push_back(result[i + N]);
-          // }
+          for (unsigned int i = 3; i < result.size(); i++) {
+            cout << "i= " << i << endl;
+            mpc_x_vals.push_back(result[i]);
+            mpc_y_vals.push_back(result[i + N]);
+          }
 
           //.. add (x,y) points to list here, points are in reference to the
           // vehicle's coordinate system

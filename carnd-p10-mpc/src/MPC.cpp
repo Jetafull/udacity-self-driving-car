@@ -6,10 +6,10 @@
 using CppAD::AD;
 
 const size_t N = 10;
-const double dt = 0.2;
+const double dt = 0.1;
 
 const double Lf = 2.67;
-const double ref_v = 50;
+const double ref_v = 70;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector.
@@ -34,34 +34,34 @@ class FG_eval {
   void operator()(ADvector& fg, const ADvector& vars) {
     // TODO: implement MPC
     // `fg` a vector of the cost constraints, `vars` is a vector of variable
-    // values (state & actuators) NOTE: You'll probably go back and forth
+    // values (sate & actuators) NOTE: You'll probably go back and forth
     // between this function and the Solver function below.
     // The cost is stored is the first element of `fg`.
     // Any additions to the cost should be added to `fg[0]`.
     fg[0] = 0;
 
-    // Reference State Cost
+    // Referece State Cost
     // TODO: Define the cost related the reference state and
     // any anything you think may be beneficial.
 
     // Cost related to the reference state
     for (unsigned int t = 0; t < N; t++) {
-      fg[0] += 7000 * CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += 7000 * CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += 2 * CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += 200 * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += 200 * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += 15 * CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize change-rate
     for (unsigned int t = 0; t < N - 1; t++) {
-      fg[0] += 5000 * CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += 500 * CppAD::pow(vars[a_start + t], 2);
+      fg[0] += 10000 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 300 * CppAD::pow(vars[a_start + t], 2);
     }
 
     //  Minimize the value gap between sequential actuations.
     for (unsigned int t = 0; t < N - 2; t++) {
-      fg[0] += 100000 *
+      fg[0] += 50000 *
                CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += 2000 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += 1000 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
     // Setup Constraints
@@ -99,12 +99,12 @@ class FG_eval {
       // Setup the rest of the model constraints
       fg[1 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
       fg[1 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
-      fg[1 + psi_start + t] = psi1 - (psi0 + v0 * delta0 / Lf * dt);
+      fg[1 + psi_start + t] = psi1 - (psi0 - v0 * delta0 / Lf * dt);
       fg[1 + v_start + t] = v1 - (v0 + a0 * dt);
       fg[1 + cte_start + t] =
           cte1 - ((f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
       fg[1 + epsi_start + t] =
-          epsi1 - ((psi0 - psides0) + v0 * delta0 / Lf * dt);
+          epsi1 - ((psi0 - psides0) - v0 * delta0 / Lf * dt);
     }
   }
 };
@@ -115,7 +115,6 @@ MPC::~MPC() {}
 
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   bool ok = true;
-  size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
   double x = state[0];
@@ -244,13 +243,13 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   result.push_back(solution.x[a_start]);
   result.push_back(N);
 
-  // extract mpc x & y values
-  for (int i = 0; i < N; i++) {
+  extract mpc x& y values for (unsigned int i = 0; i < N; i++) {
     result.push_back(solution.x[i + x_start + 1]);
   }
 
-  for (int i = 0; i < N; i++) {
+  for (unsigned int i = 0; i < N; i++) {
     result.push_back(solution.x[i + y_start + 1]);
   }
+
   return result;
 }
